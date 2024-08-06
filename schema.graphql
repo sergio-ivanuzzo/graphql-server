@@ -3,8 +3,16 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+input CreateUserInput {
+  age: Float!
+  name: String!
+  role: Role!
+}
+
 type Mutation {
-  user(input: UserInput!): User!
+  deleteUser(id: String!): Boolean!
+  newUser(input: CreateUserInput!): User!
+  user(id: String!, input: UpdateUserInput!): User!
 }
 
 type Query {
@@ -18,15 +26,15 @@ enum Role {
   USER
 }
 
+input UpdateUserInput {
+  age: Float
+  name: String
+  role: Role
+}
+
 type User {
   age: Float!
   id: String!
-  name: String!
-  role: Role!
-}
-
-input UserInput {
-  age: Float!
   name: String!
   role: Role!
 }

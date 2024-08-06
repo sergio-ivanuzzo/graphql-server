@@ -32,13 +32,29 @@ export class User {
 }
 
 @InputType()
-export class UserInput implements Omit<User, "id"> {
+export class CreateUserInput implements Omit<User, "id"> {
     @Field()
     name: string;
     @Field()
     age: number;
     @Field(() => Role)
     role: Role;
+
+    constructor(name: string, age: number, role: Role) {
+        this.name = name;
+        this.age = age;
+        this.role = role;
+    }
+}
+
+@InputType()
+export class UpdateUserInput implements Partial<Omit<User, "id">> {
+    @Field({ nullable: true })
+    name?: string;
+    @Field({ nullable: true })
+    age?: number;
+    @Field(() => Role, { nullable: true })
+    role?: Role;
 
     constructor(name: string, age: number, role: Role) {
         this.name = name;
@@ -67,8 +83,8 @@ export class UsersResolver {
         return this.users.find(user => user.id === id);
     }
 
-    @Mutation(() => User, { name: "user" })
-    async createUser(@Arg("input") input: UserInput): Promise<User> {
+    @Mutation(() => User, { name: "newUser" })
+    async createUser(@Arg("input") input: CreateUserInput): Promise<User> {
         const newUser = {
             ...input,
             id: v4()
@@ -77,5 +93,35 @@ export class UsersResolver {
         this.users.push(newUser);
 
         return newUser;
+    }
+
+    @Mutation(() => User, { name: "user" })
+    async updateUser(
+        @Arg("id") id: string,
+        @Arg("input") input: UpdateUserInput
+    ): Promise<User | never> {
+        const userIndex = this.users.findIndex(user => user.id === id);
+        if (userIndex === -1) {
+            throw new Error("User not found");
+        }
+
+        this.users[userIndex] = {
+            ...this.users[userIndex],
+            ...input,
+        }
+
+        return this.users[userIndex];
+    }
+
+    @Mutation(() => Boolean)
+    async deleteUser(@Arg("id") id: string): Promise<boolean | never> {
+        const userIndex = this.users.findIndex(user => user.id === id);
+        if (userIndex === -1) {
+            throw new Error("User not found");
+        }
+
+        this.users.splice(userIndex, 1);
+
+        return true;
     }
 }
