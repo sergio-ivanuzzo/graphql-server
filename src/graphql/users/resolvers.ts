@@ -57,17 +57,17 @@ export class UsersResolver {
         { id: v4(), name: "Bot", age: 0, role: Role.ADMIN },
     ];
 
-    @Query(() => [User])
+    @Query(() => [User], { name: "users" })
     async getUsers(): Promise<User[]> {
         return this.users;
     }
 
-    @Query(() => User)
+    @Query(() => User, { name: "user" })
     async getUser(@Arg("id") id: string): Promise<User | undefined> {
         return this.users.find(user => user.id === id);
     }
 
-    @Mutation(() => User)
+    @Mutation(() => User, { name: "user" })
     async createUser(@Arg("input") input: UserInput): Promise<User> {
         const newUser = {
             ...input,

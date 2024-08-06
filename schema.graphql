@@ -4,12 +4,12 @@
 # -----------------------------------------------
 
 type Mutation {
-  createUser(input: UserInput!): User!
+  user(input: UserInput!): User!
 }
 
 type Query {
-  getUser(id: String!): User!
-  getUsers: [User!]!
+  user(id: String!): User!
+  users: [User!]!
 }
 
 enum Role {
