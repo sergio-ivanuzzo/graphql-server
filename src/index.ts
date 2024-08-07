@@ -2,7 +2,8 @@ import express, {Application, Request, Response} from "express";
 import dotenv from "dotenv";
 import {ApolloServer} from "apollo-server-express";
 import {mergeSchemas} from "@graphql-tools/schema";
-import {setup as setupUserSchema} from "./graphql/users/schema";
+import {setup as setupUsersSchema} from "./graphql/users/schema";
+import {setup as setupRolesSchema} from "./graphql/roles/schema";
 
 dotenv.config();
 
@@ -10,10 +11,11 @@ const app: Application = express();
 const port = process.env.PORT || 3000;
 
 async function main() {
-    const userSchema = await setupUserSchema();
+    const userSchema = await setupUsersSchema();
+    const rolesSchema = await setupRolesSchema();
 
     const schema = mergeSchemas({
-        schemas: [userSchema]
+        schemas: [userSchema, rolesSchema],
     });
 
     const server = new ApolloServer({ schema });

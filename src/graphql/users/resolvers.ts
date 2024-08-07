@@ -1,16 +1,8 @@
 import "reflect-metadata";
-import {Arg, Field, InputType, Mutation, ObjectType, Query, registerEnumType, Resolver} from "type-graphql";
+import {Arg, Field, FieldResolver, InputType, Mutation, ObjectType, Query, Resolver, Root} from "type-graphql";
 import {v4} from "uuid";
-
-export enum Role {
-    USER = "user",
-    ADMIN = "admin",
-    MODERATOR = "moderator",
-}
-
-registerEnumType(Role, {
-    name: "Role"
-});
+import {Role, RolesResolver} from "../roles/resolvers";
+import {Service} from "typedi";
 
 @ObjectType()
 export class User {
@@ -20,14 +12,11 @@ export class User {
     name: string;
     @Field()
     age: number;
-    @Field(() => Role)
-    role: Role;
 
-    constructor(id: string, name: string, age: number, role: Role) {
+    constructor(id: string, name: string, age: number) {
         this.id = id;
         this.name = name;
         this.age = age;
-        this.role = role;
     }
 }
 
@@ -37,13 +26,10 @@ export class CreateUserInput implements Omit<User, "id"> {
     name: string;
     @Field()
     age: number;
-    @Field(() => Role)
-    role: Role;
 
-    constructor(name: string, age: number, role: Role) {
+    constructor(name: string, age: number) {
         this.name = name;
         this.age = age;
-        this.role = role;
     }
 }
 
@@ -53,25 +39,30 @@ export class UpdateUserInput implements Partial<Omit<User, "id">> {
     name?: string;
     @Field({ nullable: true })
     age?: number;
-    @Field(() => Role, { nullable: true })
-    role?: Role;
 
-    constructor(name: string, age: number, role: Role) {
+    constructor(name: string, age: number) {
         this.name = name;
         this.age = age;
-        this.role = role;
     }
 }
 
+@Service()
 @Resolver(() => User)
 export class UsersResolver {
     private users: User[] = [
-        { id: v4(), name: "Alex", age: 22, role: Role.USER },
-        { id: v4(), name: "Tanya", age: 21, role: Role.USER },
-        { id: v4(), name: "Masha", age: 23, role: Role.MODERATOR },
-        { id: v4(), name: "Sveta", age: 22, role: Role.USER },
-        { id: v4(), name: "Bot", age: 0, role: Role.ADMIN },
+        { id: "1", name: "Alex", age: 22 },
+        { id: "2", name: "Tanya", age: 21 },
+        { id: "3", name: "Masha", age: 23 },
+        { id: "4", name: "Sveta", age: 22 },
+        { id: "5", name: "Bot", age: 0 },
     ];
+
+    constructor(private readonly rolesResolver: RolesResolver) {}
+
+    @FieldResolver(() => Role)
+    async role(@Root() user: User): Promise<Role | undefined> {
+        return this.rolesResolver.getRoleById(user.id);
+    }
 
     @Query(() => [User], { name: "users" })
     async getUsers(): Promise<User[]> {
