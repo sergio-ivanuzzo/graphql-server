@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import {Arg, Field, ObjectType, Query, registerEnumType, Resolver} from "type-graphql";
+import {Arg, Field, Mutation, ObjectType, Query, registerEnumType, Resolver} from "type-graphql";
 import {Service} from "typedi";
 
 export enum Role {
@@ -41,5 +41,16 @@ export class RolesResolver {
     @Query(() => Role, { name: "role" })
     async getRoleById(@Arg("id") id: string): Promise<Role | undefined> {
         return this.roles.find(role => role.id === id)?.role;
+    }
+
+    @Mutation(() => RoleMap, { name: "roleForId" })
+    async createRoleForId(
+        @Arg("id") id: string,
+        @Arg("role") role: Role
+    ): Promise<RoleMap> {
+        const newRoleMap: RoleMap = { id, role };
+        this.roles.push(newRoleMap);
+
+        return newRoleMap;
     }
 }

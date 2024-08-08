@@ -26,10 +26,13 @@ export class CreateUserInput implements Omit<User, "id"> {
     name: string;
     @Field()
     age: number;
+    @Field(() => Role)
+    role: Role;
 
-    constructor(name: string, age: number) {
+    constructor(name: string, age: number, role: Role) {
         this.name = name;
         this.age = age;
+        this.role = role;
     }
 }
 
@@ -69,19 +72,31 @@ export class UsersResolver {
         return this.users;
     }
 
+    @Query(() => [User], { name: "evenUsers" })
+    async getEvenUsers(): Promise<User[]> {
+        return this.users.filter((_, index) => index % 2 === 0);
+    }
+
+    @Query(() => [User], { name: "oddUsers" })
+    async getOddUsers(): Promise<User[]> {
+        return this.users.filter((_, index) => index % 2 !== 0);
+    }
+
     @Query(() => User, { name: "user" })
     async getUser(@Arg("id") id: string): Promise<User | undefined> {
         return this.users.find(user => user.id === id);
     }
 
     @Mutation(() => User, { name: "newUser" })
-    async createUser(@Arg("input") input: CreateUserInput): Promise<User> {
+    async createUser(@Arg("input") {role, ...input}: CreateUserInput): Promise<User> {
+        const id = v4();
         const newUser = {
             ...input,
-            id: v4()
+            id
         }
 
         this.users.push(newUser);
+        await this.rolesResolver.createRoleForId(id, role);
 
         return newUser;
     }
