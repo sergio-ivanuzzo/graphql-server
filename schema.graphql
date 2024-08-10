@@ -3,21 +3,14 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
-type Mutation {
-  roleForId(id: String!, role: String!): RoleMap!
+type OMDBMovie {
+  Poster: String!
+  Title: String!
+  Type: String!
+  Year: String!
+  imdbID: String!
 }
 
 type Query {
-  role(id: String!): Role!
-}
-
-enum Role {
-  ADMIN
-  MODERATOR
-  USER
-}
-
-type RoleMap {
-  id: String!
-  role: String!
+  movies(query: String!): [OMDBMovie!]!
 }
